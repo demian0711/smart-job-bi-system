@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+{% block title %}Smart Job BI — AI Smart Matching{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+  <!-- Page header -->
+  <div class="mb-8">
+    <h1 class="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
+      <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600
+                   flex items-center justify-center text-white text-sm">
+        <i class="fa-solid fa-robot"></i>
+      </span>
+      AI Smart Matching — Gợi ý Việc làm Cá nhân hóa
+    </h1>
+    <p class="text-slate-500 text-sm mt-1 ml-10">
+      Weighted Cosine Scoring: Kỹ năng (50%) · Ngành (25%) · Địa điểm (15%) · Lương (10%)
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+    <!-- ══════════ LEFT: FORM ══════════ -->
+    <div class="lg:col-span-2">
+      <div class="card p-6 sticky top-20">
+        <div class="flex items-center gap-2 mb-5">
+          <div class="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xs">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <h2 class="font-bold text-slate-700 text-base">Thông tin sinh viên</h2>
+        </div>
+
+        <form method="POST" action="{{ url_for('matching') }}" id="match-form">
+
+          <!-- Industry -->
+          <div class="mb-4">
+            <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">
+              <i class="fa-solid fa-graduation-cap text-blue-500 mr-1"></i>Ngành học / Mong muốn
+            </label>
+            <select name="industry" required
+                    class="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 bg-white
+                           text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">— Chọn ngành —</option>
+              {% for ind in industries %}
+              <option value="{{ ind }}" {{ 'selected' if form_data.industry == ind }}>{{ ind }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Skills tag input -->
+          <div class="mb-4">
+            <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">
+              <i class="fa-solid fa-code text-blue-500 mr-1"></i>Kỹ năng hiện có
+              <span class="text-slate-400 font-normal normal-case ml-1">(nhập hoặc chọn bên dưới)</span>
+            </label>
+
+            <!-- Tags display -->
+            <div id="tags-display"
+                 class="min-h-[40px] flex flex-wrap gap-1.5 p-2 mb-2
+                        border border-slate-200 rounded-xl bg-white cursor-text"
+                 onclick="document.getElementById('skill-input').focus()">
+              <span class="text-xs text-slate-300 italic self-center" id="tags-placeholder">
+                Kỹ năng sẽ hiện ở đây…
+              </span>
+            </div>
+
+            <!-- Text input -->
+            <input type="text" id="skill-input" placeholder="Gõ kỹ năng + Enter hoặc dấu phẩy…"
+                   class="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2
+                          focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2" />
+
+            <!-- Hidden input for form submit -->
+            <input type="hidden" name="skills" id="skills-hidden" value="{{ form_data.skills }}" />
+
+            <!-- Suggestion pills -->
+            <div class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1">
+              {% for sk in common_skills %}
+              <button type="button"
+                      onclick="toggleSkill('{{ sk }}')"
+                      data-skill="{{ sk }}"
+                      class="skill-pill text-[11px] px-2.5 py-1 rounded-lg border border-slate-200
+                             text-slate-600 bg-white hover:border-blue-400 hover:text-blue-600
+                             hover:bg-blue-50 transition-all duration-150 font-medium">
+                {{ sk }}
+              </button>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div class="mb-4">
+            <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">
+              <i class="fa-solid fa-map-marker-alt text-blue-500 mr-1"></i>Địa điểm mong muốn
+            </label>
+            <select name="location" required
+                    class="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 bg-white
+                           text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">— Chọn địa điểm —</option>
+              {% for loc in locations %}
+              <option value="{{ loc }}" {{ 'selected' if form_data.location == loc }}>{{ loc }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Salary -->
+          <div class="mb-6">
+            <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">
+              <i class="fa-solid fa-money-bill-wave text-blue-500 mr-1"></i>Lương kỳ vọng
+              <span class="ml-auto text-blue-600 font-bold text-sm normal-case"
+                    id="salary-display">{{ form_data.salary }}M VNĐ/tháng</span>
+            </label>
+            <input type="range" name="salary" id="salary-range"
+                   min="5" max="30" step="0.5"
+                   value="{{ form_data.salary }}"
+                   class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+            <div class="flex justify-between text-xs text-slate-400 mt-1">
+              <span>5M</span><span>12.5M</span><span>20M</span><span>30M</span>
+            </div>
+          </div>
+
+          <button type="submit" id="submit-btn"
+                  class="btn-primary w-full justify-center py-3 text-base font-bold">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            Phân tích &amp; Gợi ý ngay
+          </button>
+
+        </form>
+
+        <!-- Algo info -->
+        <div class="mt-4 p-3 bg-slate-50 rounded-xl">
+          <p class="text-[11px] text-slate-500 font-medium mb-1.5">
+            <i class="fa-solid fa-info-circle text-blue-400 mr-1"></i>Thuật toán Weighted Scoring:
+          </p>
+          <div class="space-y-1">
+            {% for label, w, color in [
+              ('Kỹ năng (Cosine Similarity)', 50, 'blue'),
+              ('Ngành nghề', 25, 'purple'),
+              ('Địa điểm', 15, 'green'),
+              ('Mức lương', 10, 'orange')
+            ] %}
+            <div class="flex items-center gap-2">
+              <div class="w-20 text-[10px] text-slate-500 shrink-0">{{ label[:14] }}</div>
+              <div class="flex-1 bg-slate-200 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full bar-{{ color }} progress-bar"
+                     style="width: 0%" data-width="{{ w }}"></div>
+              </div>
+              <span class="text-[10px] font-bold text-slate-600 w-7 text-right">{{ w }}%</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ RIGHT: RESULTS ══════════ -->
+    <div class="lg:col-span-3">
+
+      {% if error %}
+      <div class="card p-5 border-l-4 border-red-500 bg-red-50 mb-4">
+        <div class="flex items-center gap-2 text-red-700">
+          <i class="fa-solid fa-circle-xmark"></i>
+          <strong>Lỗi xử lý:</strong> {{ error }}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if results %}
+      <!-- Stats bar -->
+      <div class="grid grid-cols-3 gap-3 mb-5">
+        <div class="card p-3 text-center">
+          <div class="text-xl font-extrabold text-blue-600">{{ stats.total_jobs_scanned|int|string + '' }}</div>
+          <div class="text-[11px] text-slate-400">Việc làm quét</div>
+        </div>
+        <div class="card p-3 text-center">
+          <div class="text-xl font-extrabold text-emerald-600">{{ stats.max_match_pct }}%</div>
+          <div class="text-[11px] text-slate-400">Match cao nhất</div>
+        </div>
+        <div class="card p-3 text-center">
+          <div class="text-xl font-extrabold text-violet-600">{{ stats.avg_salary_top_n }}M</div>
+          <div class="text-[11px] text-slate-400">Lương TB Top-15</div>
+        </div>
+      </div>
+
+      <!-- Skill Gap -->
+      {% if skill_gap %}
+      <div class="card p-4 mb-5 border-l-4 border-orange-400 bg-orange-50">
+        <div class="flex items-center gap-2 mb-2">
+          <i class="fa-solid fa-triangle-exclamation text-orange-500"></i>
+          <h3 class="font-bold text-orange-700 text-sm">
+            Kỹ năng còn thiếu — Skill Gap ({{ skill_gap|length }} kỹ năng cần học thêm)
+          </h3>
+        </div>
+        <div class="flex flex-wrap gap-1.5">
+          {% for sk in skill_gap %}
+          <span class="inline-flex items-center gap-1 text-xs bg-white border border-orange-300
+                       text-orange-700 px-2.5 py-1 rounded-lg font-semibold">
+            <i class="fa-solid fa-plus text-[9px]"></i>{{ sk.title() }}
+          </span>
+          {% endfor %}
+        </div>
+        <p class="text-[11px] text-orange-600 mt-2">
+          <i class="fa-solid fa-info-circle mr-1"></i>
+          Đây là tổng hợp kỹ năng bạn chưa có nhưng được yêu cầu trong Top-15 việc làm phù hợp nhất.
+        </p>
+      </div>
+      {% endif %}
+
+      <!-- Job results -->
+      <div class="space-y-3">
+        {% for job in results %}
+        <div class="card p-4 hover:border-blue-200 transition-colors">
+          <div class="flex items-start gap-3">
+
+            <!-- Rank -->
+            <div class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold
+                        {% if loop.index == 1 %}bg-yellow-400 text-yellow-900
+                        {% elif loop.index == 2 %}bg-slate-300 text-slate-700
+                        {% elif loop.index == 3 %}bg-orange-300 text-orange-900
+                        {% else %}bg-slate-100 text-slate-500{% endif %}">
+              {{ loop.index }}
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2 flex-wrap">
+                <div class="min-w-0">
+                  <h3 class="font-bold text-slate-800 text-sm leading-snug">{{ job.title }}</h3>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    <i class="fa-regular fa-building mr-0.5"></i>{{ job.company }}
+                    <span class="mx-1 text-slate-300">·</span>
+                    <i class="fa-solid {{ job.loc_icon }} mr-0.5"></i>{{ job.location }}
+                    <span class="mx-1 text-slate-300">·</span>
+                    <span class="text-slate-400">{{ job.source }}</span>
+                  </p>
+                </div>
+
+                <!-- Match score -->
+                <div class="shrink-0 text-right">
+                  <div class="text-lg font-extrabold
+                              {% if job.match_percentage >= 80 %}text-emerald-600
+                              {% elif job.match_percentage >= 60 %}text-blue-600
+                              {% elif job.match_percentage >= 40 %}text-yellow-600
+                              {% else %}text-red-500{% endif %}">
+                    {{ job.match_percentage }}%
+                  </div>
+                  <div class="text-[10px] text-slate-400">phù hợp</div>
+                </div>
+              </div>
+
+              <!-- Match progress bar -->
+              <div class="mt-2 mb-2.5">
+                <div class="w-full bg-slate-100 rounded-full h-2">
+                  <div class="h-2 rounded-full progress-bar bar-{{ job.match_color }}"
+                       style="width: 0%"
+                       data-width="{{ job.match_percentage }}"></div>
+                </div>
+              </div>
+
+              <!-- Score breakdown -->
+              <div class="flex gap-3 mb-2.5 flex-wrap">
+                {% for label, key, color in [
+                  ('Kỹ năng', 'skill_score', 'blue'),
+                  ('Ngành', 'industry_score', 'purple'),
+                  ('Nơi', 'location_score', 'green'),
+                  ('Lương', 'salary_score', 'orange')
+                ] %}
+                <div class="text-center">
+                  <div class="text-xs font-bold text-{{ color }}-600">{{ job.score_breakdown[key] }}%</div>
+                  <div class="text-[10px] text-slate-400">{{ label }}</div>
+                </div>
+                {% endfor %}
+                <div class="ml-auto flex items-center gap-1.5">
+                  <span class="text-xs font-bold text-emerald-600">
+                    {{ "%.1f"|format(job.salary_avg) }}M
+                  </span>
+                  <span class="text-[10px] text-slate-400">VNĐ/tháng</span>
+                </div>
+              </div>
+
+              <!-- Skills + gap -->
+              <div class="flex flex-wrap gap-1">
+                {% set job_skills = job.skills_required.split(',') %}
+                {% for sk in job_skills[:5] %}
+                <span class="text-[10px] px-2 py-0.5 rounded-md font-medium
+                             {% if sk.strip().lower() in form_data.skills.lower() %}
+                               bg-emerald-100 text-emerald-700
+                             {% else %}
+                               bg-slate-100 text-slate-500
+                             {% endif %}">
+                  {{ sk.strip() }}
+                </span>
+                {% endfor %}
+              </div>
+
+              {% if job.skill_gap %}
+              <div class="mt-1.5 flex flex-wrap gap-1">
+                {% for sk in job.skill_gap[:4] %}
+                <span class="text-[10px] px-2 py-0.5 rounded-md bg-red-50 text-red-500 border border-red-200 font-medium">
+                  <i class="fa-solid fa-plus text-[8px]"></i> {{ sk.title() }}
+                </span>
+                {% endfor %}
+                {% if job.skill_gap|length > 4 %}
+                <span class="text-[10px] text-slate-400">+{{ job.skill_gap|length - 4 }} kỹ năng</span>
+                {% endif %}
+              </div>
+              {% endif %}
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% else %}
+      <!-- Empty state -->
+      <div class="card p-12 text-center">
+        <div class="w-24 h-24 rounded-full mx-auto mb-5 flex items-center justify-center
+                    bg-gradient-to-br from-blue-50 to-violet-50">
+          <i class="fa-solid fa-robot text-4xl text-blue-300"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-600 mb-2">Chưa có kết quả gợi ý</h3>
+        <p class="text-slate-400 text-sm mb-1">Điền thông tin bên trái và nhấn</p>
+        <p class="text-blue-600 font-semibold text-sm mb-6">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> "Phân tích &amp; Gợi ý ngay"
+        </p>
+        <div class="flex justify-center gap-4 text-xs text-slate-400 flex-wrap">
+          <span><i class="fa-solid fa-check text-emerald-500 mr-1"></i>Phân tích 2.500 việc làm</span>
+          <span><i class="fa-solid fa-check text-emerald-500 mr-1"></i>Chấm điểm Cosine Similarity</span>
+          <span><i class="fa-solid fa-check text-emerald-500 mr-1"></i>Gợi ý Skill Gap</span>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ── Salary slider display ──────────────────────────────────────────────────
+  const salaryRange   = document.getElementById('salary-range');
+  const salaryDisplay = document.getElementById('salary-display');
+  salaryRange.addEventListener('input', () => {
+    salaryDisplay.textContent = parseFloat(salaryRange.value).toFixed(1) + 'M VNĐ/tháng';
+  });
+
+  // ── Skills tag input system ────────────────────────────────────────────────
+  let selectedSkills = [];
+
+  // Init from hidden input (when form reloads with data)
+  const initVal = document.getElementById('skills-hidden').value;
+  if (initVal) {
+    initVal.split(',').filter(s => s.trim()).forEach(s => addSkillTag(s.trim()));
+  }
+
+  function renderTags() {
+    const display = document.getElementById('tags-display');
+    const placeholder = document.getElementById('tags-placeholder');
+    display.innerHTML = '';
+    if (selectedSkills.length === 0) {
+      display.appendChild(placeholder || (() => {
+        const el = document.createElement('span');
+        el.id = 'tags-placeholder';
+        el.className = 'text-xs text-slate-300 italic self-center';
+        el.textContent = 'Kỹ năng sẽ hiện ở đây…';
+        return el;
+      })());
+    } else {
+      selectedSkills.forEach(sk => {
+        const tag = document.createElement('span');
+        tag.className = 'inline-flex items-center gap-1 text-xs bg-blue-600 text-white px-2.5 py-1 rounded-lg font-semibold';
+        tag.innerHTML = `${sk} <button type="button" onclick="removeSkill('${sk}')" class="hover:text-blue-200 ml-0.5"><i class="fa-solid fa-xmark text-[10px]"></i></button>`;
+        display.appendChild(tag);
+      });
+    }
+    document.getElementById('skills-hidden').value = selectedSkills.join(', ');
+    // Update pill active states
+    document.querySelectorAll('.skill-pill').forEach(pill => {
+      const sk = pill.dataset.skill;
+      if (selectedSkills.map(s => s.toLowerCase()).includes(sk.toLowerCase())) {
+        pill.className = pill.className.replace('bg-white border-slate-200 text-slate-600',
+          'bg-blue-600 border-blue-600 text-white');
+      } else {
+        pill.classList.remove('bg-blue-600', 'border-blue-600', 'text-white');
+        pill.classList.add('bg-white', 'border-slate-200', 'text-slate-600');
+      }
+    });
+  }
+
+  function addSkillTag(sk) {
+    if (!sk || selectedSkills.map(s => s.toLowerCase()).includes(sk.toLowerCase())) return;
+    selectedSkills.push(sk);
+    renderTags();
+  }
+
+  function removeSkill(sk) {
+    selectedSkills = selectedSkills.filter(s => s.toLowerCase() !== sk.toLowerCase());
+    renderTags();
+  }
+
+  function toggleSkill(sk) {
+    if (selectedSkills.map(s => s.toLowerCase()).includes(sk.toLowerCase())) {
+      removeSkill(sk);
+    } else {
+      addSkillTag(sk);
+    }
+  }
+
+  // Type-to-add
+  const skillInput = document.getElementById('skill-input');
+  skillInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = skillInput.value.trim().replace(/,$/, '');
+      if (val) { addSkillTag(val); skillInput.value = ''; }
+    }
+  });
+
+  // Loading state on submit
+  document.getElementById('match-form').addEventListener('submit', function() {
+    const btn = document.getElementById('submit-btn');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang phân tích…';
+    btn.disabled = true;
+  });
+</script>
+{% endblock %}
+

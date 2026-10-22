@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Smart Job BI System{% endblock %}</title>
+
+  <!-- TailwindCSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#2563EB', dark: '#1D4ED8', light: '#DBEAFE' },
+            accent:  { DEFAULT: '#7C3AED', light: '#EDE9FE' },
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          boxShadow: {
+            card: '0 1px 3px 0 rgba(0,0,0,.08), 0 1px 2px -1px rgba(0,0,0,.06)',
+            'card-hover': '0 10px 15px -3px rgba(0,0,0,.08), 0 4px 6px -4px rgba(0,0,0,.05)',
+          },
+        },
+      },
+    }
+  </script>
+
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #F1F5F9; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+    /* ── Nav active indicator ── */
+    .nav-link { @apply relative text-slate-600 hover:text-blue-600 transition-colors duration-200 text-sm font-medium px-1 py-2; }
+    .nav-link.active { @apply text-blue-600; }
+    .nav-link.active::after {
+      content: '';
+      position: absolute; bottom: -1px; left: 0; right: 0;
+      height: 2px; border-radius: 2px;
+      background: #2563EB;
+    }
+
+    /* ── Card ── */
+    .card { @apply bg-white rounded-2xl border border-slate-100 shadow-card hover:shadow-card-hover transition-shadow duration-200; }
+
+    /* ── Gradient button ── */
+    .btn-primary {
+      @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold text-sm
+             transition-all duration-200 shadow-sm;
+      background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,.4); }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* ── Progress bar ── */
+    .progress-bar { transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+
+    /* ── Skeleton loader ── */
+    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+                background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+    /* ── Badge colors ── */
+    .badge-blue   { @apply bg-blue-100 text-blue-700; }
+    .badge-purple { @apply bg-purple-100 text-purple-700; }
+    .badge-pink   { @apply bg-pink-100 text-pink-700; }
+    .badge-green  { @apply bg-emerald-100 text-emerald-700; }
+    .badge-orange { @apply bg-orange-100 text-orange-700; }
+    .badge-slate  { @apply bg-slate-100 text-slate-700; }
+    .badge-gray   { @apply bg-gray-100 text-gray-700; }
+
+    /* ── Dot color ── */
+    .dot-blue   { background: #2563EB; }
+    .dot-purple { background: #7C3AED; }
+    .dot-pink   { background: #EC4899; }
+    .dot-green  { background: #059669; }
+    .dot-orange { background: #D97706; }
+    .dot-slate  { background: #475569; }
+
+    /* ── Toast ── */
+    #toast { transition: all 0.3s ease; }
+
+    /* ── Match bar colors ── */
+    .bar-green  { background: linear-gradient(90deg, #059669, #10B981); }
+    .bar-blue   { background: linear-gradient(90deg, #2563EB, #3B82F6); }
+    .bar-yellow { background: linear-gradient(90deg, #D97706, #F59E0B); }
+    .bar-red    { background: linear-gradient(90deg, #DC2626, #EF4444); }
+  </style>
+
+  {% block head %}{% endblock %}
+</head>
+
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen">
+
+<!-- ═══════════════════════════ NAVBAR ════════════════════════════════════ -->
+<nav class="fixed top-0 inset-x-0 z-50 bg-white border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo -->
+      <a href="{{ url_for('index') }}" class="flex items-center gap-2.5 shrink-0">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+             style="background: linear-gradient(135deg, #2563EB, #7C3AED)">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+        <div class="leading-tight">
+          <div class="font-bold text-slate-800 text-sm">Smart Job BI</div>
+          <div class="text-xs text-slate-400 -mt-0.5">Hệ thống tìm việc thông minh</div>
+        </div>
+      </a>
+
+      <!-- Nav links (desktop) -->
+      <div class="hidden md:flex items-center gap-6">
+
+        <a href="{{ url_for('index') }}"
+           class="nav-link {{ 'active' if active_page == 'home' else '' }}">
+          <i class="fa-solid fa-magnifying-glass mr-1.5 text-xs"></i>Tìm Việc làm
+        </a>
+
+        <a href="{{ url_for('matching') }}"
+           class="nav-link {{ 'active' if active_page == 'matching' else '' }}">
+          <i class="fa-solid fa-robot mr-1.5 text-xs"></i>AI Matching
+        </a>
+
+        <a href="{{ url_for('analytics') }}"
+           class="nav-link {{ 'active' if active_page == 'analytics' else '' }}">
+          <i class="fa-solid fa-chart-bar mr-1.5 text-xs"></i>Phân tích BI
+        </a>
+
+        <a href="{{ url_for('superset') }}"
+           class="nav-link {{ 'active' if active_page == 'superset' else '' }}">
+          <i class="fa-solid fa-database mr-1.5 text-xs"></i>Superset
+        </a>
+
+        <a href="{{ url_for('matching') }}" class="btn-primary ml-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+          Gợi ý việc làm
+        </a>
+      </div>
+
+      <!-- Mobile hamburger -->
+      <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 bg-white px-4 py-3 space-y-1">
+    <a href="{{ url_for('index') }}"
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium {{ 'bg-blue-50 text-blue-600' if active_page == 'home' else 'text-slate-600 hover:bg-slate-50' }}">
+      <i class="fa-solid fa-magnifying-glass w-4"></i>Tìm Việc làm
+    </a>
+    <a href="{{ url_for('matching') }}"
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium {{ 'bg-blue-50 text-blue-600' if active_page == 'matching' else 'text-slate-600 hover:bg-slate-50' }}">
+      <i class="fa-solid fa-robot w-4"></i>AI Matching
+    </a>
+    <a href="{{ url_for('analytics') }}"
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium {{ 'bg-blue-50 text-blue-600' if active_page == 'analytics' else 'text-slate-600 hover:bg-slate-50' }}">
+      <i class="fa-solid fa-chart-bar w-4"></i>Phân tích BI
+    </a>
+    <a href="{{ url_for('superset') }}"
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium {{ 'bg-blue-50 text-blue-600' if active_page == 'superset' else 'text-slate-600 hover:bg-slate-50' }}">
+      <i class="fa-solid fa-database w-4"></i>Superset
+    </a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════ MAIN ══════════════════════════════════════ -->
+<main class="pt-16 min-h-screen">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ═══════════════════════════ FOOTER ════════════════════════════════════ -->
+<footer class="mt-16 border-t border-slate-200 bg-white">
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs"
+             style="background: linear-gradient(135deg, #2563EB, #7C3AED)">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+        <span class="text-sm font-semibold text-slate-700">Smart Job BI System</span>
+        <span class="text-slate-300">·</span>
+        <span class="text-xs text-slate-400">Môn Hệ thống Kinh doanh Thông minh</span>
+      </div>
+      <div class="flex items-center gap-5 text-xs text-slate-400">
+        <span><i class="fa-solid fa-database mr-1"></i>2.500 tin tuyển dụng</span>
+        <span><i class="fa-brands fa-python mr-1"></i>Python · Pandas · NumPy</span>
+        <span><i class="fa-solid fa-flask mr-1"></i>Flask · SQLAlchemy</span>
+        <span><i class="fa-solid fa-chart-line mr-1"></i>Matplotlib · Superset</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════ TOAST ═════════════════════════════════════ -->
+<div id="toast"
+     class="fixed bottom-6 right-6 z-50 opacity-0 pointer-events-none
+            flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium
+            bg-slate-800 text-white max-w-sm">
+  <i id="toast-icon" class="fa-solid fa-circle-check text-green-400"></i>
+  <span id="toast-msg"></span>
+</div>
+
+<!-- ═══════════════════════════ GLOBAL JS ═════════════════════════════════ -->
+<script>
+  // Mobile menu toggle
+  document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+  });
+
+  // Toast helper
+  function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    const icon  = document.getElementById('toast-icon');
+    const msgEl = document.getElementById('toast-msg');
+    icon.className = type === 'success'
+      ? 'fa-solid fa-circle-check text-green-400'
+      : 'fa-solid fa-circle-xmark text-red-400';
+    msgEl.textContent = msg;
+    toast.style.opacity = '1';
+    toast.style.pointerEvents = 'auto';
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.pointerEvents = 'none';
+    }, 3500);
+  }
+
+  // Animate progress bars on load
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-width]').forEach(el => {
+      setTimeout(() => { el.style.width = el.dataset.width + '%'; }, 200);
+    });
+  });
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>
+

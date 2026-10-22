@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% block title %}Smart Job BI — Phân tích BI & Xu hướng{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+  <!-- Page header -->
+  <div class="flex items-start justify-between gap-4 mb-8 flex-wrap">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-violet-700
+                     flex items-center justify-center text-white text-sm">
+          <i class="fa-solid fa-chart-bar"></i>
+        </span>
+        Báo cáo Phân tích Xu hướng Tuyển dụng
+      </h1>
+      <p class="text-slate-500 text-sm mt-1">
+        Phân tích tự động từ <strong>2.500</strong> tin tuyển dụng · Dùng Pandas, NumPy &amp; Matplotlib
+      </p>
+    </div>
+    <button onclick="regenerateCharts()" id="regen-btn"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-violet-200
+                   text-violet-700 font-semibold text-sm bg-violet-50 hover:bg-violet-100
+                   transition-all duration-200">
+      <i class="fa-solid fa-rotate" id="regen-icon"></i>
+      Tạo lại biểu đồ
+    </button>
+  </div>
+
+  <!-- ══════════ AUTO INSIGHTS ══════════ -->
+  <section class="mb-8">
+    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">
+      <i class="fa-solid fa-lightbulb text-yellow-400 mr-1.5"></i>Nhận xét tự động từ dữ liệu
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
+      <div class="card p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+            <i class="fa-solid fa-crown text-blue-600 text-xs"></i>
+          </div>
+          <span class="text-xs font-semibold text-slate-500 uppercase">Ngành dẫn đầu</span>
+        </div>
+        <div class="text-sm font-bold text-slate-800">{{ insights.top_industry }}</div>
+        <div class="text-xs text-blue-600 mt-1">
+          <i class="fa-solid fa-percent text-[10px]"></i> {{ insights.top_industry_pct }}% thị phần
+        </div>
+      </div>
+
+      <div class="card p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+            <i class="fa-solid fa-sack-dollar text-emerald-600 text-xs"></i>
+          </div>
+          <span class="text-xs font-semibold text-slate-500 uppercase">Lương IT TB</span>
+        </div>
+        <div class="text-sm font-bold text-slate-800">{{ insights.avg_salary_it }}M VNĐ</div>
+        <div class="text-xs text-slate-400 mt-1">
+          Toàn ngành: {{ insights.avg_salary_all }}M VNĐ
+        </div>
+      </div>
+
+      <div class="card p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+            <i class="fa-solid fa-fire text-orange-500 text-xs"></i>
+          </div>
+          <span class="text-xs font-semibold text-slate-500 uppercase">Kỹ năng #1</span>
+        </div>
+        <div class="text-sm font-bold text-slate-800">{{ insights.top_skill }}</div>
+        <div class="text-xs text-orange-600 mt-1">
+          <i class="fa-solid fa-hashtag text-[10px]"></i> {{ insights.top_skill_count }} lượt yêu cầu
+        </div>
+      </div>
+
+      <div class="card p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
+            <i class="fa-solid fa-calendar-days text-violet-600 text-xs"></i>
+          </div>
+          <span class="text-xs font-semibold text-slate-500 uppercase">Tháng cao nhất</span>
+        </div>
+        <div class="text-sm font-bold text-slate-800">{{ insights.best_month }}</div>
+        <div class="text-xs text-violet-600 mt-1">
+          <i class="fa-solid fa-arrow-up text-[10px]"></i> {{ insights.best_month_count }} tin đăng
+        </div>
+      </div>
+
+      <div class="card p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center">
+            <i class="fa-solid fa-wifi text-sky-600 text-xs"></i>
+          </div>
+          <span class="text-xs font-semibold text-slate-500 uppercase">Remote</span>
+        </div>
+        <div class="text-sm font-bold text-slate-800">{{ insights.remote_pct }}%</div>
+        <div class="text-xs text-slate-400 mt-1">Việc làm từ xa</div>
+      </div>
+
+      <div class="card p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
+            <i class="fa-solid fa-rocket text-red-500 text-xs"></i>
+          </div>
+          <span class="text-xs font-semibold text-slate-500 uppercase">Nhu cầu cao</span>
+        </div>
+        <div class="text-sm font-bold text-slate-800">{{ insights.high_demand_jobs }}</div>
+        <div class="text-xs text-slate-400 mt-1">Việc làm nhu cầu cao &amp; rất cao</div>
+      </div>
+
+      <div class="card p-4 md:col-span-2">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center">
+            <i class="fa-solid fa-trophy text-yellow-600 text-xs"></i>
+          </div>
+          <span class="text-xs font-semibold text-slate-500 uppercase">Lương cao nhất theo ngành</span>
+        </div>
+        <div class="text-sm font-bold text-slate-800">{{ insights.highest_sal_ind }}</div>
+        <div class="text-xs text-yellow-600 mt-1">
+          Trung bình: <strong>{{ insights.highest_sal_val }}M VNĐ/tháng</strong>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════ CHARTS ══════════ -->
+  {% if not charts_exist %}
+  <div class="card p-8 text-center mb-6">
+    <div class="w-16 h-16 rounded-full bg-yellow-50 flex items-center justify-center mx-auto mb-3">
+      <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-2xl"></i>
+    </div>
+    <h3 class="font-bold text-slate-700 mb-2">Biểu đồ chưa được tạo</h3>
+    <p class="text-slate-400 text-sm mb-4">Nhấn nút "Tạo lại biểu đồ" ở góc trên bên phải để sinh biểu đồ.</p>
+    <button onclick="regenerateCharts()" class="btn-primary mx-auto w-fit">
+      <i class="fa-solid fa-rotate"></i> Tạo biểu đồ ngay
+    </button>
+  </div>
+  {% endif %}
+
+  <!-- Chart 1: Industry -->
+  <div class="card mb-6 overflow-hidden">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between gap-3">
+      <div>
+        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+          <span class="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-white text-xs">1</span>
+          Thống kê Việc làm &amp; Mức lương theo Ngành nghề
+        </h3>
+        <p class="text-xs text-slate-400 mt-0.5 ml-8">
+          Biểu đồ cột kép · Cột xanh = số lượng · Đường cam = lương trung bình
+        </p>
+      </div>
+      <span class="shrink-0 text-xs bg-blue-50 text-blue-600 font-semibold px-2.5 py-1 rounded-lg">
+        <i class="fa-solid fa-chart-column mr-1"></i>Bar + Line
+      </span>
+    </div>
+    <div class="p-4 bg-slate-50" id="chart-industry-wrap">
+      {% if charts_exist %}
+      <img src="{{ url_for('static', filename='charts/chart_industry.png') }}?t={{ ts }}"
+           alt="Biểu đồ ngành nghề"
+           class="w-full rounded-lg shadow-sm" />
+      {% else %}
+      <div class="h-48 flex items-center justify-center text-slate-300">
+        <i class="fa-solid fa-image text-5xl"></i>
+      </div>
+      {% endif %}
+    </div>
+    <div class="px-5 py-3 bg-amber-50 border-t border-amber-100">
+      <p class="text-xs text-amber-700">
+        <i class="fa-solid fa-lightbulb mr-1 text-amber-500"></i>
+        <strong>Nhận xét:</strong> <strong>{{ insights.top_industry }}</strong> dẫn đầu về số lượng tin tuyển dụng
+        ({{ insights.top_industry_pct }}% thị phần). Ngành có mức lương trung bình cao nhất là
+        <strong>{{ insights.highest_sal_ind }}</strong> (~{{ insights.highest_sal_val }}M VNĐ/tháng).
+        Sinh viên IT có lợi thế rõ ràng về mức lương so với các ngành khác.
+      </p>
+    </div>
+  </div>
+
+  <!-- Charts 2 + 3 side by side on desktop -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+    <!-- Chart 2: Trend -->
+    <div class="card overflow-hidden">
+      <div class="p-5 border-b border-slate-100">
+        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+          <span class="w-6 h-6 rounded-md bg-violet-600 flex items-center justify-center text-white text-xs">2</span>
+          Xu hướng Tuyển dụng theo Tháng
+        </h3>
+        <p class="text-xs text-slate-400 mt-0.5 ml-8">
+          6 tháng gần nhất · Đường xu hướng tuyến tính (Linear Trend)
+        </p>
+      </div>
+      <div class="p-4 bg-slate-50">
+        {% if charts_exist %}
+        <img src="{{ url_for('static', filename='charts/chart_trend.png') }}?t={{ ts }}"
+             alt="Xu hướng tuyển dụng"
+             class="w-full rounded-lg shadow-sm" />
+        {% else %}
+        <div class="h-48 flex items-center justify-center text-slate-200">
+          <i class="fa-solid fa-image text-4xl"></i>
+        </div>
+        {% endif %}
+      </div>
+      <div class="px-5 py-3 bg-violet-50 border-t border-violet-100">
+        <p class="text-xs text-violet-700">
+          <i class="fa-solid fa-lightbulb mr-1 text-violet-500"></i>
+          <strong>Nhận xét:</strong> Tháng <strong>{{ insights.best_month }}</strong> ghi nhận cao điểm tuyển dụng với
+          <strong>{{ insights.best_month_count }}</strong> tin đăng. Xu hướng tuyến tính cho thấy
+          nhu cầu nhân lực ngày càng tăng trong giai đoạn phân tích.
+        </p>
+      </div>
+    </div>
+
+    <!-- Chart 3: Skills -->
+    <div class="card overflow-hidden">
+      <div class="p-5 border-b border-slate-100">
+        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+          <span class="w-6 h-6 rounded-md bg-emerald-600 flex items-center justify-center text-white text-xs">3</span>
+          Top 10 Kỹ năng Được Săn Đón Nhất
+        </h3>
+        <p class="text-xs text-slate-400 mt-0.5 ml-8">
+          Tổng hợp từ 2.500 tin tuyển dụng · Gradient màu theo thứ hạng
+        </p>
+      </div>
+      <div class="p-4 bg-slate-50">
+        {% if charts_exist %}
+        <img src="{{ url_for('static', filename='charts/chart_skills.png') }}?t={{ ts }}"
+             alt="Top kỹ năng"
+             class="w-full rounded-lg shadow-sm" />
+        {% else %}
+        <div class="h-48 flex items-center justify-center text-slate-200">
+          <i class="fa-solid fa-image text-4xl"></i>
+        </div>
+        {% endif %}
+      </div>
+      <div class="px-5 py-3 bg-emerald-50 border-t border-emerald-100">
+        <p class="text-xs text-emerald-700">
+          <i class="fa-solid fa-lightbulb mr-1 text-emerald-500"></i>
+          <strong>Nhận xét:</strong> <strong>{{ insights.top_skill }}</strong> là kỹ năng được yêu cầu nhiều nhất
+          với <strong>{{ insights.top_skill_count }}</strong> lượt xuất hiện. Sinh viên nên ưu tiên
+          học Excel, Python, SQL và kỹ năng giao tiếp để tăng cơ hội được nhận.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tech note -->
+  <div class="card p-5 bg-gradient-to-r from-slate-800 to-slate-900 text-white">
+    <div class="flex items-center gap-3 flex-wrap">
+      <i class="fa-brands fa-python text-yellow-400 text-2xl"></i>
+      <div>
+        <div class="font-semibold text-sm">Công nghệ tạo biểu đồ</div>
+        <div class="text-slate-400 text-xs mt-0.5">
+          Matplotlib (DPI=150) · Pandas aggregation · NumPy statistics · Segoe UI font (hỗ trợ tiếng Việt)
+        </div>
+      </div>
+      <div class="ml-auto flex gap-2 flex-wrap">
+        {% for tech in ['Matplotlib', 'Pandas', 'NumPy', 'SQLAlchemy'] %}
+        <span class="text-xs bg-white/10 text-slate-300 px-2.5 py-1 rounded-lg font-medium">{{ tech }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function regenerateCharts() {
+    const btn  = document.getElementById('regen-btn');
+    const icon = document.getElementById('regen-icon');
+    btn.disabled = true;
+    icon.className = 'fa-solid fa-rotate fa-spin';
+    btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Đang tạo biểu đồ…';
+
+    fetch('/api/regenerate-charts', { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          showToast(data.message, 'success');
+          setTimeout(() => location.reload(), 1200);
+        } else {
+          showToast('Lỗi: ' + data.error, 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-rotate" id="regen-icon"></i> Tạo lại biểu đồ';
+        }
+      })
+      .catch(() => {
+        showToast('Không thể kết nối server', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-rotate" id="regen-icon"></i> Tạo lại biểu đồ';
+      });
+  }
+</script>
+{% endblock %}
+

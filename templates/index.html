@@ -1,0 +1,499 @@
+{% extends "base.html" %}
+{% block title %}Smart Job BI — Tìm kiếm Việc làm Thông minh{% endblock %}
+
+{% block head %}
+<style>
+  /* Hero không bị text-overflow */
+  .hero-section { background: linear-gradient(135deg, #1e40af 0%, #3730a3 50%, #5b21b6 100%); }
+
+  /* KPI card float nổi lên khỏi hero */
+  .kpi-grid { margin-top: -56px; position: relative; z-index: 10; }
+
+  /* Filter select focus */
+  .filter-select {
+    width: 100%;
+    font-size: 0.875rem;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 12px;
+    padding: 10px 14px;
+    background-color: #F8FAFC;
+    color: #1E293B;
+    transition: all 0.15s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2364748B'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 18px;
+    padding-right: 40px;
+  }
+  .filter-select:focus {
+    outline: none;
+    border-color: #6366F1;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+
+  /* Quick skill pill */
+  .skill-pill-btn {
+    font-size: 12px; font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1.5px solid #E2E8F0;
+    background: white; color: #475569;
+    transition: all 0.15s ease;
+    cursor: pointer; white-space: nowrap;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .skill-pill-btn:hover { border-color: #6366F1; color: #6366F1; background: #EEF2FF; }
+  .skill-pill-btn.active { border-color: #6366F1; color: white; background: #6366F1; }
+
+  /* Job card */
+  .job-card {
+    background: white; border-radius: 16px;
+    border: 1.5px solid #E2E8F0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    padding: 20px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+    gap: 12px;
+  }
+  .job-card:hover { box-shadow: 0 8px 24px rgba(99,102,241,0.12); border-color: #A5B4FC; transform: translateY(-2px); }
+
+  /* Demand score badge */
+  .demand-badge {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; line-height: 1;
+    flex-shrink: 0;
+  }
+  .demand-high   { background: #DCFCE7; color: #166534; }
+  .demand-med    { background: #DBEAFE; color: #1E40AF; }
+  .demand-low    { background: #F1F5F9; color: #475569; }
+
+  /* Salary badge */
+  .salary-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #ECFDF5; color: #065F46;
+    font-size: 13px; font-weight: 700;
+    padding: 5px 12px; border-radius: 8px;
+    border: 1px solid #A7F3D0;
+  }
+
+  /* Clickable skill tag */
+  .skill-tag {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 6px;
+    background: #EFF6FF; color: #1D4ED8;
+    border: 1px solid #BFDBFE;
+    cursor: pointer; text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    display: inline-block;
+  }
+  .skill-tag:hover { background: #DBEAFE; color: #1E40AF; }
+  .skill-tag.active-filter { background: #3730A3; color: white; border-color: #3730A3; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════
+     HERO SECTION — gradient tím xanh đậm
+════════════════════════════════════════════════ -->
+<section class="hero-section pt-12 pb-20 px-4">
+  <div class="max-w-7xl mx-auto text-center">
+    <!-- Label badge -->
+    <span class="inline-flex items-center gap-1.5 text-indigo-200 text-xs font-semibold
+                 bg-white/10 border border-white/20 px-4 py-1.5 rounded-full mb-5">
+      <i class="fa-solid fa-bolt-lightning text-yellow-300"></i>
+      Hệ thống BI tìm việc thông minh — Big Data · Python · Superset
+    </span>
+
+    <h1 class="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4">
+      Khám phá <span class="text-yellow-300">{{ kpis.total_jobs }}</span><br class="md:hidden"/>
+      <span class="text-indigo-200 text-3xl md:text-4xl"> cơ hội việc làm</span>
+    </h1>
+    <p class="text-indigo-200 text-sm max-w-lg mx-auto mb-8">
+      Dành cho sinh viên mới tốt nghiệp &nbsp;·&nbsp;
+      Tổng hợp từ <strong class="text-white">TopCV, VietnamWorks, ITViec, LinkedIn</strong>
+    </p>
+
+    <!-- Search bar -->
+    <form method="GET" action="{{ url_for('index') }}"
+          class="max-w-2xl mx-auto flex gap-2 bg-white rounded-2xl p-2 shadow-2xl">
+      <!-- Preserve other filters when searching -->
+      {% if selected_industry %}<input type="hidden" name="industry" value="{{ selected_industry }}">{% endif %}
+      {% if selected_skill    %}<input type="hidden" name="skill"    value="{{ selected_skill }}">{% endif %}
+      {% if selected_location %}<input type="hidden" name="location" value="{{ selected_location }}">{% endif %}
+      {% if selected_source   %}<input type="hidden" name="source"   value="{{ selected_source }}">{% endif %}
+
+      <div class="flex-1 flex items-center gap-2 px-4">
+        <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+        <input type="text" name="keyword" value="{{ keyword }}"
+               placeholder="Vị trí, công ty hoặc kỹ năng…"
+               class="w-full text-sm outline-none text-slate-700 placeholder-slate-400 py-1 bg-transparent" />
+      </div>
+      <button type="submit"
+              class="shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold
+                     text-sm text-white shadow-md transition-all duration-200
+                     bg-indigo-600 hover:bg-indigo-700 active:scale-95">
+        <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     KPI CARDS — nổi lên trên viền hero (-mt)
+════════════════════════════════════════════════ -->
+<div class="kpi-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5
+            max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+  <!-- KPI 1 — Tổng việc làm -->
+  <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-lg flex items-center gap-4">
+    <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm
+                bg-gradient-to-br from-blue-500 to-indigo-600">
+      <i class="fa-solid fa-briefcase text-white text-lg"></i>
+    </div>
+    <div>
+      <div class="text-3xl font-extrabold text-slate-800 leading-none">{{ kpis.total_jobs }}</div>
+      <div class="text-xs text-slate-500 mt-1 font-medium">Tổng số việc làm</div>
+      <div class="text-xs text-indigo-500 font-semibold mt-1">
+        <i class="fa-solid fa-arrow-trend-up"></i> Cập nhật 6 tháng gần nhất
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI 2 — Lương TB -->
+  <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-lg flex items-center gap-4">
+    <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm
+                bg-gradient-to-br from-emerald-500 to-teal-600">
+      <i class="fa-solid fa-hand-holding-dollar text-white text-lg"></i>
+    </div>
+    <div>
+      <div class="text-3xl font-extrabold text-slate-800 leading-none">{{ kpis.avg_salary }}</div>
+      <div class="text-xs text-slate-500 mt-1 font-medium">Lương TB / tháng</div>
+      <div class="text-xs text-emerald-500 font-semibold mt-1">
+        <i class="fa-solid fa-graduation-cap"></i> Sinh viên mới ra trường
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI 3 — Ngành hot -->
+  <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-lg flex items-center gap-4">
+    <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm
+                bg-gradient-to-br from-violet-500 to-purple-600">
+      <i class="fa-solid fa-fire text-white text-lg"></i>
+    </div>
+    <div class="min-w-0">
+      <div class="text-base font-extrabold text-slate-800 leading-tight truncate">
+        {{ kpis.top_industry }}
+      </div>
+      <div class="text-xs text-slate-500 mt-1 font-medium">Ngành hot nhất</div>
+      <div class="text-xs text-violet-500 font-semibold mt-1">
+        <i class="fa-solid fa-star"></i> {{ kpis.top_industry_count }} tin tuyển dụng
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI 4 — Nguồn tích hợp -->
+  <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-lg flex items-center gap-4">
+    <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm
+                bg-gradient-to-br from-orange-400 to-rose-500">
+      <i class="fa-solid fa-layer-group text-white text-lg"></i>
+    </div>
+    <div>
+      <div class="text-3xl font-extrabold text-slate-800 leading-none">{{ kpis.total_sources }}</div>
+      <div class="text-xs text-slate-500 mt-1 font-medium">Nguồn dữ liệu tích hợp</div>
+      <div class="flex gap-1 mt-1.5 flex-wrap">
+        {% for s in ['TopCV', 'VN Works', 'ITViec', 'LinkedIn'] %}
+        <span class="text-[10px] bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full font-semibold border border-orange-200">
+          {{ s }}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════
+     FILTER BOX — 4 cột + Quick Skill Tags
+════════════════════════════════════════════════ -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+
+    <!-- 4 cột lọc -->
+    <form method="GET" action="{{ url_for('index') }}" id="filter-form">
+      {% if keyword %}<input type="hidden" name="keyword" value="{{ keyword }}">{% endif %}
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+
+        <!-- Ngành nghề -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+            <i class="fa-solid fa-layer-group text-indigo-400 mr-1"></i>Ngành nghề
+          </label>
+          <select name="industry" class="filter-select">
+            <option value="">— Tất cả ngành —</option>
+            {% for ind in industries %}
+            <option value="{{ ind }}" {{ 'selected' if selected_industry == ind }}>{{ ind }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Kỹ năng -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+            <i class="fa-solid fa-code text-indigo-400 mr-1"></i>Kỹ năng
+          </label>
+          <select name="skill" class="filter-select" id="skill-select">
+            <option value="">— Tất cả kỹ năng —</option>
+            {% for sk in all_skills %}
+            <option value="{{ sk }}" {{ 'selected' if selected_skill == sk }}>{{ sk }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Địa điểm -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+            <i class="fa-solid fa-map-marker-alt text-indigo-400 mr-1"></i>Địa điểm
+          </label>
+          <select name="location" class="filter-select">
+            <option value="">— Tất cả nơi —</option>
+            {% for loc in locations %}
+            <option value="{{ loc }}" {{ 'selected' if selected_location == loc }}>{{ loc }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Nguồn -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+            <i class="fa-solid fa-database text-indigo-400 mr-1"></i>Nguồn tuyển dụng
+          </label>
+          <select name="source" class="filter-select">
+            <option value="">— Tất cả nguồn —</option>
+            {% for src in sources %}
+            <option value="{{ src }}" {{ 'selected' if selected_source == src }}>{{ src }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Nút hành động -->
+      <div class="flex items-center gap-3">
+        <button type="submit"
+                class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
+                       text-white bg-indigo-600 hover:bg-indigo-700 shadow-md
+                       transition-all duration-200 active:scale-95">
+          <i class="fa-solid fa-filter"></i> Áp dụng bộ lọc
+        </button>
+        {% if any_filter %}
+        <a href="{{ url_for('index') }}"
+           class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
+                  text-slate-600 border-2 border-slate-200 hover:border-red-300 hover:text-red-600
+                  hover:bg-red-50 transition-all duration-200">
+          <i class="fa-solid fa-xmark"></i> Xóa bộ lọc
+        </a>
+        {% endif %}
+        <div class="ml-auto text-xs text-slate-400 hidden sm:block">
+          <i class="fa-solid fa-circle-info mr-1"></i>
+          {{ total_filtered }} kết quả khớp bộ lọc hiện tại
+        </div>
+      </div>
+    </form>
+
+    <!-- Divider -->
+    <div class="border-t border-slate-100 mt-5 mb-4"></div>
+
+    <!-- Quick Skill Tags — Top 10 -->
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <i class="fa-solid fa-fire text-orange-400 text-sm"></i>
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">
+          Kỹ năng nổi bật — Click để lọc ngay
+        </span>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        {% for sk in top_skills %}
+        <a href="{{ url_for('index', skill=sk,
+                            industry=selected_industry,
+                            location=selected_location,
+                            source=selected_source,
+                            keyword=keyword) }}"
+           class="skill-pill-btn {{ 'active' if selected_skill == sk }}">
+          <i class="fa-solid fa-hashtag text-[10px]"></i>{{ sk }}
+          {% if selected_skill == sk %}
+          <i class="fa-solid fa-xmark text-[10px]"></i>
+          {% endif %}
+        </a>
+        {% endfor %}
+        <!-- Xem thêm kỹ năng -->
+        <span class="text-xs text-slate-400 self-center ml-1">
+          · {{ all_skills|length }} kỹ năng trong DB
+        </span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     JOB LISTING
+════════════════════════════════════════════════ -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 pb-16">
+
+  <!-- Results header -->
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="font-bold text-slate-700 text-base flex items-center gap-2">
+      {% if any_filter %}
+        <span class="w-6 h-6 rounded-lg bg-indigo-100 flex items-center justify-center">
+          <i class="fa-solid fa-filter text-indigo-600 text-xs"></i>
+        </span>
+        <span>
+          <strong class="text-indigo-600">{{ total_filtered }}</strong> kết quả
+          {% if selected_skill %} có kỹ năng <strong>{{ selected_skill }}</strong>{% endif %}
+          {% if selected_industry %} · <span class="text-slate-500">{{ selected_industry }}</span>{% endif %}
+          {% if selected_location %} · <span class="text-slate-500">{{ selected_location }}</span>{% endif %}
+          <span class="text-slate-400 font-normal text-sm ml-1">(hiển thị {{ jobs|length }})</span>
+        </span>
+      {% else %}
+        <span class="w-6 h-6 rounded-lg bg-orange-100 flex items-center justify-center">
+          <i class="fa-solid fa-fire text-orange-500 text-xs"></i>
+        </span>
+        Việc làm nổi bật · Xếp theo nhu cầu thị trường
+        <span class="text-slate-400 font-normal text-sm">({{ jobs|length }}/{{ total_filtered }})</span>
+      {% endif %}
+    </h2>
+    <a href="{{ url_for('matching') }}"
+       class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600
+              hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg
+              transition border border-indigo-100">
+      <i class="fa-solid fa-robot"></i> AI Matching cá nhân hóa
+    </a>
+  </div>
+
+  {% if jobs %}
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+    {% for job in jobs %}
+    <div class="job-card">
+
+      <!-- ── Phần trên: Title + Score ── -->
+      <div class="flex items-start gap-3">
+        <div class="flex-1 min-w-0">
+          <h3 class="font-bold text-slate-800 text-sm leading-snug line-clamp-2 mb-1">
+            {{ job.title }}
+          </h3>
+          <p class="text-xs text-slate-500 font-medium flex items-center gap-1 truncate">
+            <i class="fa-regular fa-building text-slate-400"></i>
+            {{ job.company }}
+          </p>
+        </div>
+        <!-- Demand score -->
+        <div class="demand-badge shrink-0
+                    {% if job.demand_score >= 7 %}demand-high
+                    {% elif job.demand_score >= 5 %}demand-med
+                    {% else %}demand-low{% endif %}">
+          <span>{{ "%.1f"|format(job.demand_score) }}</span>
+          <span style="font-size:8px; font-weight:500; opacity:.7; margin-top:1px">điểm</span>
+        </div>
+      </div>
+
+      <!-- ── Badges: Industry + Location + Source ── -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg
+                     badge-{{ job.badge_color }}">
+          <i class="fa-solid {{ job.badge_icon }} text-[10px]"></i>{{ job.industry }}
+        </span>
+        <span class="inline-flex items-center gap-1 text-xs text-slate-500">
+          <i class="fa-solid {{ job.loc_icon }} text-[10px]"></i>{{ job.location }}
+        </span>
+        <span class="ml-auto text-[10px] font-semibold text-slate-400
+                     bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full">
+          {{ job.source }}
+        </span>
+      </div>
+
+      <!-- ── Mức lương ── -->
+      <div>
+        <span class="salary-badge">
+          <i class="fa-solid fa-money-bill-wave text-emerald-500 text-xs"></i>
+          {{ "%.1f"|format(job.salary_min) }}M – {{ "%.1f"|format(job.salary_max) }}M VNĐ/tháng
+        </span>
+      </div>
+
+      <!-- ── Kỹ năng (clickable tags) ── -->
+      <div class="flex flex-wrap gap-1.5">
+        {% for sk in job.skills_preview %}
+        <a href="{{ url_for('index', skill=sk,
+                            industry=selected_industry,
+                            location=selected_location,
+                            source=selected_source) }}"
+           class="skill-tag {{ 'active-filter' if selected_skill == sk }}">
+          {{ sk }}
+        </a>
+        {% endfor %}
+        {% if job.skills_extra > 0 %}
+        <span class="text-[11px] bg-slate-50 text-slate-400 px-2 py-0.5 rounded-md border border-slate-200">
+          +{{ job.skills_extra }} kỹ năng
+        </span>
+        {% endif %}
+      </div>
+
+      <!-- ── Footer: Cấp độ + Ngày đăng ── -->
+      <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
+        <span class="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
+          <i class="fa-regular fa-clock text-slate-400"></i>
+          {{ job.experience_level }}
+        </span>
+        <span class="text-[11px] text-slate-400 flex items-center gap-1">
+          <i class="fa-regular fa-calendar text-slate-300"></i>
+          {{ job.posted_date|string|truncate(10, true, '') }}
+        </span>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if total_filtered > 24 %}
+  <div class="mt-10 text-center">
+    <p class="text-sm text-slate-400 mb-4">
+      <i class="fa-solid fa-circle-info mr-1"></i>
+      Đang hiển thị <strong>24</strong> / <strong>{{ total_filtered }}</strong> kết quả.
+      Dùng bộ lọc hoặc AI Matching để tìm chính xác hơn.
+    </p>
+    <a href="{{ url_for('matching') }}"
+       class="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm
+              text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg
+              transition-all duration-200 hover:-translate-y-0.5">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      Dùng AI Matching để tìm chính xác hơn
+    </a>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <!-- Empty state -->
+  <div class="text-center py-24">
+    <div class="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-5">
+      <i class="fa-solid fa-magnifying-glass text-4xl text-slate-300"></i>
+    </div>
+    <h3 class="text-xl font-bold text-slate-600 mb-2">Không tìm thấy kết quả</h3>
+    <p class="text-slate-400 text-sm mb-6 max-w-xs mx-auto">
+      Thử thay đổi bộ lọc, từ khóa hoặc xóa bộ lọc để xem tất cả việc làm.
+    </p>
+    <a href="{{ url_for('index') }}"
+       class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
+              text-white bg-indigo-600 hover:bg-indigo-700 shadow-md transition-all">
+      <i class="fa-solid fa-rotate-left"></i> Xem tất cả việc làm
+    </a>
+  </div>
+  {% endif %}
+
+</section>
+
+{% endblock %}

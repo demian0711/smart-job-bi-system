@@ -40,8 +40,18 @@
     ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
     /* ── Nav active indicator ── */
-    .nav-link { @apply relative text-slate-600 hover:text-blue-600 transition-colors duration-200 text-sm font-medium px-1 py-2; }
-    .nav-link.active { @apply text-blue-600; }
+    .nav-link {
+      position: relative;
+      color: #475569;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.5rem 0.25rem;
+      transition: color 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+    }
+    .nav-link:hover { color: #2563EB; }
+    .nav-link.active { color: #2563EB; }
     .nav-link.active::after {
       content: '';
       position: absolute; bottom: -1px; left: 0; right: 0;
@@ -50,13 +60,30 @@
     }
 
     /* ── Card ── */
-    .card { @apply bg-white rounded-2xl border border-slate-100 shadow-card hover:shadow-card-hover transition-shadow duration-200; }
+    .card {
+      background-color: #ffffff;
+      border-radius: 1rem;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,.08), 0 1px 2px -1px rgba(0,0,0,.06);
+      transition: box-shadow 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,.08), 0 4px 6px -4px rgba(0,0,0,.05);
+    }
 
     /* ── Gradient button ── */
     .btn-primary {
-      @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold text-sm
-             transition-all duration-200 shadow-sm;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.75rem;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.875rem;
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,.05);
       background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+      transition: all 0.2s ease;
     }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,.4); }
     .btn-primary:active { transform: translateY(0); }
@@ -70,13 +97,13 @@
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
     /* ── Badge colors ── */
-    .badge-blue   { @apply bg-blue-100 text-blue-700; }
-    .badge-purple { @apply bg-purple-100 text-purple-700; }
-    .badge-pink   { @apply bg-pink-100 text-pink-700; }
-    .badge-green  { @apply bg-emerald-100 text-emerald-700; }
-    .badge-orange { @apply bg-orange-100 text-orange-700; }
-    .badge-slate  { @apply bg-slate-100 text-slate-700; }
-    .badge-gray   { @apply bg-gray-100 text-gray-700; }
+    .badge-blue   { background-color: #DBEAFE; color: #1D4ED8; }
+    .badge-purple { background-color: #EDE9FE; color: #6D28D9; }
+    .badge-pink   { background-color: #FCE7F3; color: #BE185D; }
+    .badge-green  { background-color: #D1FAE5; color: #047857; }
+    .badge-orange { background-color: #FFEDD5; color: #C2410C; }
+    .badge-slate  { background-color: #F1F5F9; color: #334155; }
+    .badge-gray   { background-color: #F3F4F6; color: #374151; }
 
     /* ── Dot color ── */
     .dot-blue   { background: #2563EB; }

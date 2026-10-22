@@ -315,10 +315,15 @@ def regenerate_charts():
 @app.route("/superset")
 def superset():
     db_uri = f"sqlite:///{DB_PATH}"
+    preview_path = CHARTS_DIR / "superset_preview.png"
+    preview_exists = preview_path.exists()
+    ts = int(datetime.now().timestamp())
     return render_template(
         "superset.html",
         db_uri=db_uri,
         db_path=str(DB_PATH),
+        preview_exists=preview_exists,
+        ts=ts,
         active_page="superset",
     )
 

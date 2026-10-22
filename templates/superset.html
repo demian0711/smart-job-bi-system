@@ -5,23 +5,119 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
   <!-- Page header -->
-  <div class="mb-8">
-    <h1 class="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
-      <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500
-                   flex items-center justify-center text-white text-sm">
-        <i class="fa-solid fa-database"></i>
-      </span>
-      Tích hợp Apache Superset Dashboard
-    </h1>
-    <p class="text-slate-500 text-sm mt-1 ml-10">
-      Kết nối Python · SQLAlchemy · SQLite với Apache Superset để trực quan hóa dữ liệu tuyển dụng
-    </p>
+  <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
+        <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-orange-500
+                     flex items-center justify-center text-white text-base shadow-sm">
+          <i class="fa-solid fa-chart-pie"></i>
+        </span>
+        Tích hợp Apache Superset Dashboard
+      </h1>
+      <p class="text-slate-500 text-sm mt-1 ml-11">
+        Kết hợp sức mạnh phân tích Python (ETL/Pandas) và Trực quan hóa tương tác của Apache Superset
+      </p>
+    </div>
+    
+    <!-- Action buttons -->
+    <div class="flex items-center gap-3">
+      <a href="http://localhost:8088" target="_blank"
+         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm
+                text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600
+                shadow-md hover:shadow-lg transition-all duration-200">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        Mở Superset (Port 8088)
+      </a>
+      <a href="#preview-section"
+         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm
+                text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition shadow-sm">
+        <i class="fa-solid fa-image text-indigo-500"></i>
+        Xem Ảnh Dashboard
+      </a>
+    </div>
   </div>
 
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       SECTION: DASHBOARD SCREENSHOT PREVIEW (static/charts/superset_preview.png)
+  ═══════════════════════════════════════════════════════════════════════════ -->
+  <div id="preview-section" class="card overflow-hidden mb-8 border-2 border-indigo-100 shadow-md">
+    <div class="p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <h2 class="font-bold text-base text-white tracking-wide">
+            Ảnh chụp Báo cáo Dashboard Thực tế (Superset Preview)
+          </h2>
+          <span class="text-[11px] bg-white/10 text-indigo-200 px-2.5 py-0.5 rounded-full font-mono">
+            static/charts/superset_preview.png
+          </span>
+        </div>
+        <p class="text-xs text-slate-300 mt-1">
+          Báo cáo tổng hợp: Phân bố Địa điểm, Lương theo Ngành nghề, Xu hướng tuyển dụng và Nhu cầu thị trường
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        {% if preview_exists %}
+        <span class="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-lg font-semibold flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-check"></i> Đã có ảnh báo cáo
+        </span>
+        <a href="{{ url_for('static', filename='charts/superset_preview.png') }}?t={{ ts }}" target="_blank"
+           class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+          <i class="fa-solid fa-expand"></i> Phóng to
+        </a>
+        {% else %}
+        <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-lg font-semibold flex items-center gap-1.5">
+          <i class="fa-solid fa-clock"></i> Đang chờ cập nhật ảnh
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Preview Content Area -->
+    <div class="p-4 bg-slate-100 min-h-[380px] flex items-center justify-center">
+      {% if preview_exists %}
+        <div class="w-full text-center">
+          <img src="{{ url_for('static', filename='charts/superset_preview.png') }}?t={{ ts }}"
+               alt="Apache Superset Dashboard Preview"
+               class="w-full max-h-[650px] object-contain rounded-xl shadow-lg border border-slate-200 mx-auto" />
+          <p class="text-xs text-slate-500 mt-3 italic">
+            <i class="fa-solid fa-circle-info mr-1"></i>
+            Ảnh hiển thị từ <code>static/charts/superset_preview.png</code>. Để thay ảnh mới, chỉ cần chụp lại và ghi đè file này.
+          </p>
+        </div>
+      {% else %}
+        <!-- Placeholder khi chưa có ảnh -->
+        <div class="max-w-xl text-center py-10 px-6">
+          <div class="w-20 h-20 rounded-2xl bg-indigo-50 border-2 border-dashed border-indigo-200 flex items-center justify-center mx-auto mb-4 text-indigo-400">
+            <i class="fa-solid fa-chart-line text-3xl"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-700 mb-1">Chưa có ảnh chụp Dashboard</h3>
+          <p class="text-slate-500 text-xs mb-4">
+            Sau khi hoàn tất tạo Dashboard trên Superset (theo hướng dẫn bên dưới), bạn chụp màn hình và lưu vào thư mục dự án để web tự động hiển thị ngay:
+          </p>
+          <div class="bg-white border border-slate-200 rounded-xl p-3 text-left shadow-sm text-xs space-y-1.5 font-mono text-slate-700 mb-4">
+            <div class="text-[11px] text-slate-400 font-sans font-semibold uppercase">Đường dẫn file đích:</div>
+            <div class="text-indigo-600 font-bold break-all select-all">
+              D:\Workspace\Project\smart-job-bi-system\static\charts\superset_preview.png
+            </div>
+          </div>
+          <div class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 bg-slate-200/60 px-4 py-2 rounded-lg">
+            <i class="fa-solid fa-camera text-slate-400"></i>
+            Phím tắt chụp nhanh trên Windows: <kbd class="bg-white px-1.5 py-0.5 rounded shadow text-[10px]">Win + Shift + S</kbd>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       TWO-COLUMN LAYOUT: IFRAME & CONFIGURATION
+  ═══════════════════════════════════════════════════════════════════════════ -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    <!-- ══════════ LEFT: EMBED + LINKS ══════════ -->
-    <div class="lg:col-span-2 space-y-5">
+    <!-- ══════════ LEFT COLUMN (2 Cols): Quick Access + Iframe ══════════ -->
+    <div class="lg:col-span-2 space-y-6">
 
       <!-- Quick access banner -->
       <div class="card p-5 bg-gradient-to-r from-orange-500 to-red-500 text-white">
@@ -29,310 +125,296 @@
           <div>
             <div class="flex items-center gap-2 mb-1">
               <i class="fa-solid fa-bolt-lightning text-yellow-300"></i>
-              <span class="font-bold text-lg">Apache Superset</span>
-              <span class="text-xs bg-white/20 px-2 py-0.5 rounded-full font-medium">v4.x</span>
+              <span class="font-bold text-lg">Khởi động Nhanh Apache Superset</span>
+              <span class="text-xs bg-white/20 px-2 py-0.5 rounded-full font-medium">Port 8088</span>
             </div>
-            <p class="text-orange-100 text-sm">
-              Dashboard BI tương tác · Drill-down · Filters nâng cao
+            <p class="text-orange-100 text-xs">
+              Tài khoản mặc định: <strong>admin</strong> &nbsp;|&nbsp; Mật khẩu: <strong>admin</strong>
             </p>
           </div>
-          <div class="flex flex-col gap-2 shrink-0">
+          <div class="flex items-center gap-2">
             <a href="http://localhost:8088" target="_blank"
                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
                       bg-white text-orange-600 font-bold text-sm shadow-sm
                       hover:bg-orange-50 transition-all duration-200">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i>
-              Mở Superset Dashboard
+              <i class="fa-solid fa-external-link"></i>
+              Mở Tab Mới (8088)
             </a>
-            <span class="text-center text-[11px] text-orange-200">
-              <i class="fa-solid fa-circle text-xs mr-1"></i>http://localhost:8088
-            </span>
           </div>
         </div>
       </div>
 
       <!-- Superset Embed iframe -->
       <div class="card overflow-hidden">
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-          <h3 class="font-bold text-slate-700 flex items-center gap-2">
+        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
+          <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">
             <i class="fa-solid fa-desktop text-violet-500"></i>
-            Dashboard Nhúng (Embedded iframe)
+            Khung Nhúng Trực Tiếp (Embedded Superset iframe)
           </h3>
-          <div class="flex gap-2">
+          <div class="flex items-center gap-2">
             <span id="superset-status" class="text-xs bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full font-semibold">
-              <i class="fa-solid fa-circle-dot fa-fade mr-1"></i>Đang kết nối…
+              <i class="fa-solid fa-circle-dot fa-fade mr-1"></i>Đang kiểm tra kết nối…
             </span>
             <button onclick="reloadIframe()"
-                    class="text-xs text-slate-500 hover:text-blue-600 px-2.5 py-1 rounded-lg
-                           border border-slate-200 hover:border-blue-300 transition">
+                    class="text-xs text-slate-600 hover:text-blue-600 px-3 py-1.5 rounded-lg
+                           border border-slate-200 hover:border-blue-300 transition bg-slate-50">
               <i class="fa-solid fa-rotate"></i> Tải lại
             </button>
           </div>
         </div>
 
         <!-- iframe container -->
-        <div class="relative bg-slate-100" style="height: 480px;">
+        <div class="relative bg-slate-100" style="height: 520px;">
           <iframe id="superset-frame"
                   src="http://localhost:8088"
                   class="w-full h-full border-0"
                   onload="onIframeLoad()"
                   onerror="onIframeError()">
           </iframe>
+          
           <!-- Overlay message when not available -->
           <div id="superset-overlay"
-               class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 hidden">
-            <div class="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center mb-4">
-              <i class="fa-solid fa-database text-3xl text-orange-400"></i>
+               class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 hidden p-6 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center mb-3 text-orange-500 shadow-sm">
+              <i class="fa-solid fa-server text-2xl"></i>
             </div>
-            <h3 class="font-bold text-slate-600 text-lg mb-1">Superset chưa chạy</h3>
-            <p class="text-slate-400 text-sm text-center max-w-xs mb-5">
-              Khởi động Apache Superset tại <code class="bg-slate-200 px-1.5 py-0.5 rounded text-xs">localhost:8088</code>
-              để nhúng dashboard vào đây.
+            <h3 class="font-bold text-slate-700 text-base mb-1">Chưa kết nối được cổng 8088</h3>
+            <p class="text-slate-500 text-xs max-w-sm mb-4">
+              Container Superset đang tạm dừng hoặc trình duyệt chặn hiển thị dạng nhúng iframe (chính sách X-Frame-Options/CORS).
             </p>
-            <a href="http://localhost:8088" target="_blank"
-               class="btn-primary">
-              <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
-              Thử mở lại
-            </a>
+            <div class="flex items-center gap-2">
+              <a href="http://localhost:8088" target="_blank"
+                 class="btn-primary text-xs py-2 px-4">
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                Mở trực tiếp trên tab mới
+              </a>
+              <button onclick="reloadIframe()"
+                      class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50">
+                Thử kết nối lại
+              </button>
+            </div>
           </div>
         </div>
 
         <div class="p-3 bg-slate-50 border-t border-slate-100">
-          <p class="text-xs text-slate-400 flex items-center gap-1.5">
-            <i class="fa-solid fa-shield-halved text-slate-300"></i>
-            Lưu ý: Trình duyệt có thể chặn iframe do chính sách CORS. Hãy cấu hình
-            <code class="bg-slate-200 px-1 rounded text-[11px]">ENABLE_CORS = True</code> trong Superset.
+          <p class="text-[11px] text-slate-500 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-question text-slate-400"></i>
+            <strong>Mẹo:</strong> Nếu iframe không tải được do bảo mật của trình duyệt, hãy nhấn nút <strong>"Mở Tab Mới (8088)"</strong> ở phía trên để thao tác toàn màn hình.
           </p>
         </div>
       </div>
 
       <!-- SQLAlchemy URI config -->
       <div class="card overflow-hidden">
-        <div class="p-4 border-b border-slate-100">
-          <h3 class="font-bold text-slate-700 flex items-center gap-2">
+        <div class="p-4 border-b border-slate-100 bg-slate-50">
+          <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
             <i class="fa-solid fa-link text-blue-500"></i>
-            Cấu hình kết nối SQLAlchemy URI trong Superset
+            Thông số Cấu hình SQLAlchemy URI (Dành cho Cách 2)
           </h3>
         </div>
         <div class="p-5 space-y-4">
-          <!-- URI box -->
           <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-2">
-              SQLAlchemy Database URI
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+              SQLAlchemy Database Connection URI (SQLite)
             </label>
             <div class="flex gap-2">
-              <code class="flex-1 block bg-slate-900 text-emerald-400 text-sm px-4 py-3
-                           rounded-xl font-mono break-all">
+              <code class="flex-1 block bg-slate-900 text-emerald-400 text-xs px-4 py-3
+                           rounded-xl font-mono break-all select-all">
                 {{ db_uri }}
               </code>
               <button onclick="copyURI()"
-                      class="shrink-0 px-3 py-3 rounded-xl border border-slate-200 text-slate-500
-                             hover:border-blue-400 hover:text-blue-600 transition text-sm">
+                      class="shrink-0 px-3.5 py-3 rounded-xl border border-slate-200 text-slate-600
+                             hover:border-blue-400 hover:text-blue-600 transition text-sm bg-white shadow-sm">
                 <i class="fa-regular fa-copy" id="copy-icon"></i>
               </button>
             </div>
           </div>
 
-          <!-- Absolute path note -->
-          <div class="p-3 bg-blue-50 rounded-xl border border-blue-100">
-            <p class="text-xs text-blue-700">
-              <i class="fa-solid fa-circle-info mr-1.5"></i>
-              <strong>Lưu ý về đường dẫn:</strong> SQLite yêu cầu đường dẫn tuyệt đối.
-              File DB của dự án này nằm tại:
-            </p>
-            <code class="block mt-1.5 text-[11px] font-mono text-blue-600 break-all">
-              {{ db_path }}
-            </code>
-          </div>
-
-          <!-- Step by step -->
-          <div class="space-y-2">
-            <div class="text-xs font-bold text-slate-600 uppercase tracking-wide">Các bước kết nối nhanh:</div>
-            {% for step in [
-              ('1', 'blue', 'fa-plug', 'Vào Settings → Database Connections → + Database'),
-              ('2', 'purple', 'fa-list', 'Chọn loại database: SQLite'),
-              ('3', 'green', 'fa-paste', 'Dán SQLAlchemy URI ở trên vào ô kết nối'),
-              ('4', 'orange', 'fa-vial', 'Nhấn "Test Connection" → Thành công → Lưu'),
-              ('5', 'red', 'fa-chart-pie', 'Vào Charts → + Chart → Chọn bảng jobs_data'),
-            ] %}
-            <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-              <span class="w-6 h-6 rounded-full bg-{{ step[1] }}-100 text-{{ step[1] }}-700
-                           flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-                {{ step[0] }}
-              </span>
-              <div class="flex items-center gap-2 min-w-0">
-                <i class="fa-solid {{ step[2] }} text-{{ step[1] }}-500 text-sm shrink-0"></i>
-                <span class="text-xs text-slate-600">{{ step[3] }}</span>
-              </div>
+          <div class="p-3.5 bg-blue-50 rounded-xl border border-blue-100 text-xs text-blue-800 space-y-1">
+            <div class="font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info text-blue-600"></i>
+              Nguyên lý kết hợp Python &amp; Superset:
             </div>
-            {% endfor %}
+            <p>
+              Superset đọc trực tiếp cơ sở dữ liệu SQLite hoặc PostgreSQL thông qua SQLAlchemy driver. Dữ liệu sau khi được script <code>src/data_pipeline.py</code> của Python làm sạch sẽ được lưu vào bảng <strong>jobs_data</strong> và sẵn sàng để Superset phân tích mà không cần code thêm backend.
+            </p>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- ══════════ RIGHT: SETUP GUIDE ══════════ -->
-    <div class="space-y-5">
+    <!-- ══════════ RIGHT COLUMN (1 Col): GUIDES & DATASET INFO ══════════ -->
+    <div class="space-y-6">
 
-      <!-- Install guide -->
-      <div class="card p-5">
-        <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">
-          <i class="fa-brands fa-python text-yellow-500"></i>
-          Cài đặt Apache Superset
-        </h3>
-        <div class="space-y-3 text-xs">
-          {% for cmd in [
-            ('pip install apache-superset', 'green', '1. Cài đặt'),
-            ('superset db upgrade', 'blue', '2. Khởi tạo DB'),
-            ('superset fab create-admin', 'violet', '3. Tạo admin'),
-            ('superset init', 'orange', '4. Khởi tạo roles'),
-            ('superset run -p 8088 --with-threads', 'red', '5. Chạy server'),
-          ] %}
-          <div>
-            <div class="text-[10px] font-semibold text-{{ cmd[1] }}-500 uppercase mb-1">{{ cmd[2] }}</div>
-            <code class="block bg-slate-900 text-emerald-400 px-3 py-2 rounded-lg font-mono text-[11px] break-all">
-              {{ cmd[0] }}
-            </code>
+      <!-- 2 Methods of Loading Data -->
+      <div class="card p-5 border-l-4 border-emerald-500">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
+            <i class="fa-solid fa-star"></i>
+          </span>
+          <h3 class="font-bold text-slate-800 text-sm">2 Cách đưa dữ liệu vào Superset</h3>
+        </div>
+        
+        <div class="space-y-3 mt-3 text-xs">
+          <!-- Method 1 -->
+          <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200">
+            <div class="font-bold text-emerald-800 flex items-center justify-between">
+              <span>Cách 1: Upload file CSV (Khuyên dùng)</span>
+              <span class="text-[10px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded font-bold">99% Thành công</span>
+            </div>
+            <p class="text-slate-600 text-[11px] mt-1">
+              Dùng file <code>data/jobs_dataset.csv</code> (2.500 dòng). Không lo quyền truy cập hay đường dẫn nội bộ giữa Windows và Docker.
+            </p>
           </div>
-          {% endfor %}
-          <div class="p-2.5 bg-yellow-50 rounded-lg border border-yellow-200 mt-2">
-            <p class="text-[11px] text-yellow-700">
-              <i class="fa-solid fa-triangle-exclamation mr-1"></i>
-              Superset yêu cầu Python 3.9+ và một số system packages.
-              Xem tài liệu chính thức để cài đầy đủ.
+
+          <!-- Method 2 -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="font-bold text-slate-700">Cách 2: SQLAlchemy URI SQLite</div>
+            <p class="text-slate-500 text-[11px] mt-1">
+              Thích hợp khi Superset chạy native trực tiếp trên Windows cùng môi trường với Python.
             </p>
           </div>
         </div>
       </div>
 
-      <!-- Architecture diagram -->
+      <!-- Docker Commands Quick Card -->
       <div class="card p-5">
-        <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-sitemap text-blue-500"></i>
-          Kiến trúc tích hợp
+        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm">
+          <i class="fa-brands fa-docker text-blue-500 text-base"></i>
+          Lệnh Docker Khởi động Superset
         </h3>
-        <div class="space-y-2 text-xs">
-          {% for item in [
-            ('fa-database', 'blue', 'Data Layer', 'SQLite (jobs_bi.db) · 2.500 records'),
-            ('fa-arrows-up-down', 'violet', 'ORM Layer', 'SQLAlchemy · Kết nối Python ↔ DB'),
-            ('fa-flask', 'green', 'App Layer', 'Flask · Smart Engine · Matching API'),
-            ('fa-chart-pie', 'orange', 'BI Layer', 'Apache Superset · Interactive Dashboard'),
-          ] %}
-          <div class="flex items-start gap-3 p-3 rounded-xl bg-{{ item[1] }}-50 border border-{{ item[1] }}-100">
-            <div class="w-8 h-8 rounded-lg bg-{{ item[1] }}-100 flex items-center justify-center shrink-0">
-              <i class="fa-solid {{ item[0] }} text-{{ item[1] }}-600 text-sm"></i>
-            </div>
-            <div>
-              <div class="font-semibold text-{{ item[1] }}-700">{{ item[2] }}</div>
-              <div class="text-{{ item[1] }}-600 text-[11px] mt-0.5">{{ item[3] }}</div>
-            </div>
+        
+        <div class="space-y-2.5 text-xs">
+          <div>
+            <div class="text-[11px] font-semibold text-slate-500 mb-1">Nếu container đã có sẵn trên máy:</div>
+            <code class="block bg-slate-900 text-emerald-400 px-3 py-2 rounded-lg font-mono text-[11px] break-all select-all">
+              docker start vietnam-news-bi-postgres-1 vietnam-news-bi-superset-1
+            </code>
           </div>
-          {% if not loop.last %}
-          <div class="flex justify-center text-slate-300">
-            <i class="fa-solid fa-arrow-down text-sm"></i>
+
+          <div>
+            <div class="text-[11px] font-semibold text-slate-500 mb-1">Kiểm tra trạng thái container:</div>
+            <code class="block bg-slate-900 text-emerald-400 px-3 py-2 rounded-lg font-mono text-[11px] select-all">
+              docker ps
+            </code>
           </div>
-          {% endif %}
-          {% endfor %}
         </div>
       </div>
 
-      <!-- Tables in DB -->
+      <!-- Dataset Schema Reference -->
       <div class="card p-5">
-        <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2">
-          <i class="fa-solid fa-table text-emerald-500"></i>
-          Bảng dữ liệu trong SQLite
+        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm">
+          <i class="fa-solid fa-table text-indigo-500"></i>
+          Cột dữ liệu cho 4 Biểu đồ Superset
         </h3>
         <div class="overflow-x-auto">
           <table class="w-full text-xs">
             <thead>
-              <tr class="border-b border-slate-200">
-                <th class="text-left py-1.5 text-slate-500 font-semibold">Cột</th>
-                <th class="text-left py-1.5 text-slate-500 font-semibold">Mô tả</th>
+              <tr class="border-b border-slate-200 text-slate-500 font-semibold">
+                <th class="text-left py-1.5">Tên Cột</th>
+                <th class="text-left py-1.5">Ý nghĩa cho Biểu đồ</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              {% for col, desc in [
-                ('job_id', 'ID duy nhất'),
-                ('title', 'Tên vị trí'),
-                ('company', 'Công ty'),
-                ('industry', 'Ngành nghề'),
-                ('skills', 'Kỹ năng yêu cầu'),
-                ('location', 'Địa điểm'),
-                ('salary_avg', 'Lương TB (M)'),
-                ('demand_score', 'Điểm nhu cầu'),
-                ('income_group', 'Nhóm thu nhập'),
-                ('posted_month', 'Tháng đăng tin'),
-                ('source', 'Nguồn tuyển dụng'),
-              ] %}
-              <tr class="hover:bg-slate-50">
-                <td class="py-1.5 font-mono text-blue-600 text-[11px]">{{ col }}</td>
-                <td class="py-1.5 text-slate-500">{{ desc }}</td>
+              <tr>
+                <td class="py-1.5 font-mono text-indigo-600 font-semibold">location</td>
+                <td class="py-1.5 text-slate-600">Chart 1: Phân bố Địa điểm</td>
               </tr>
-              {% endfor %}
+              <tr>
+                <td class="py-1.5 font-mono text-indigo-600 font-semibold">industry</td>
+                <td class="py-1.5 text-slate-600">Chart 2: Ngành nghề</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 font-mono text-indigo-600 font-semibold">salary_avg</td>
+                <td class="py-1.5 text-slate-600">Chart 2: Lương trung bình (M)</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 font-mono text-indigo-600 font-semibold">posted_date</td>
+                <td class="py-1.5 text-slate-600">Chart 3: Xu hướng thời gian</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 font-mono text-indigo-600 font-semibold">demand_score</td>
+                <td class="py-1.5 text-slate-600">Chart 4: Điểm nhu cầu</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 font-mono text-indigo-600 font-semibold">source</td>
+                <td class="py-1.5 text-slate-600">Chart 4: Nguồn tuyển dụng</td>
+              </tr>
             </tbody>
           </table>
         </div>
-        <div class="mt-3 text-[11px] text-slate-400 flex items-center gap-1">
-          <i class="fa-solid fa-info-circle"></i>
-          Table: <code class="bg-slate-100 px-1 rounded mx-0.5">jobs_data</code> · 20 cột · 2.500 hàng
+      </div>
+
+      <!-- Doc Link -->
+      <div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-100 text-xs">
+        <div class="font-bold text-indigo-900 mb-1 flex items-center gap-1.5">
+          <i class="fa-solid fa-book text-indigo-600"></i>
+          File Hướng dẫn Chi tiết:
         </div>
+        <p class="text-indigo-700">
+          Xem hướng dẫn click-by-click tại file <code>SUPERSET_STEP_BY_STEP.md</code> ở thư mục gốc của dự án.
+        </p>
       </div>
 
     </div>
+
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  const supersetURI = {{ db_uri | tojson }};
+  const supersetURI = "{{ db_uri }}";
 
   function onIframeLoad() {
-    document.getElementById('superset-status').innerHTML =
-      '<i class="fa-solid fa-circle text-emerald-500 mr-1"></i>Đã kết nối';
-    document.getElementById('superset-status').className =
-      'text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold';
+    const status = document.getElementById('superset-status');
+    if (status) {
+      status.innerHTML = '<i class="fa-solid fa-circle text-emerald-500 mr-1"></i>Đã tải iframe';
+      status.className = 'text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold';
+    }
   }
 
   function onIframeError() {
-    document.getElementById('superset-overlay').classList.remove('hidden');
-    document.getElementById('superset-status').innerHTML =
-      '<i class="fa-solid fa-circle-xmark text-red-500 mr-1"></i>Chưa kết nối';
-    document.getElementById('superset-status').className =
-      'text-xs bg-red-100 text-red-700 px-2.5 py-1 rounded-full font-semibold';
+    const overlay = document.getElementById('superset-overlay');
+    const status  = document.getElementById('superset-status');
+    if (overlay) overlay.classList.remove('hidden');
+    if (status) {
+      status.innerHTML = '<i class="fa-solid fa-circle-xmark text-red-500 mr-1"></i>Không kết nối được';
+      status.className = 'text-xs bg-red-100 text-red-700 px-2.5 py-1 rounded-full font-semibold';
+    }
   }
 
-  // Show overlay after 3s if iframe hasn't reported load
+  // Timeout 3.5s kiểm tra iframe
   setTimeout(() => {
     const overlay = document.getElementById('superset-overlay');
     const status  = document.getElementById('superset-status');
-    if (status.textContent.includes('Đang kết nối')) {
-      overlay.classList.remove('hidden');
-      status.innerHTML = '<i class="fa-solid fa-circle-xmark text-red-500 mr-1"></i>Chưa kết nối';
-      status.className = 'text-xs bg-red-100 text-red-700 px-2.5 py-1 rounded-full font-semibold';
+    if (status && status.textContent.includes('kiểm tra')) {
+      if (overlay) overlay.classList.remove('hidden');
+      status.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>Xem trực tiếp port 8088';
+      status.className = 'text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-semibold';
     }
-  }, 3000);
+  }, 3500);
 
   function reloadIframe() {
     const frame   = document.getElementById('superset-frame');
     const overlay = document.getElementById('superset-overlay');
-    overlay.classList.add('hidden');
-    document.getElementById('superset-status').innerHTML =
-      '<i class="fa-solid fa-circle-dot fa-fade mr-1"></i>Đang kết nối…';
-    document.getElementById('superset-status').className =
-      'text-xs bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full font-semibold';
-    frame.src = frame.src;
+    const status  = document.getElementById('superset-status');
+    if (overlay) overlay.classList.add('hidden');
+    if (status) {
+      status.innerHTML = '<i class="fa-solid fa-circle-dot fa-fade mr-1"></i>Đang tải lại…';
+      status.className = 'text-xs bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full font-semibold';
+    }
+    if (frame) frame.src = frame.src;
   }
 
   function copyURI() {
     navigator.clipboard.writeText(supersetURI).then(() => {
       const icon = document.getElementById('copy-icon');
-      icon.className = 'fa-solid fa-check text-emerald-500';
+      if (icon) icon.className = 'fa-solid fa-check text-emerald-500';
       showToast('Đã sao chép SQLAlchemy URI!', 'success');
-      setTimeout(() => { icon.className = 'fa-regular fa-copy'; }, 2000);
+      setTimeout(() => { if (icon) icon.className = 'fa-regular fa-copy'; }, 2000);
     });
   }
 </script>
 {% endblock %}
-

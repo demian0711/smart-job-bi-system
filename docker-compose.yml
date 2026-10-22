@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: smart-job-bi-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: superset
+      POSTGRES_USER: superset
+      POSTGRES_PASSWORD: superset_password
+    volumes:
+      - superset_db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  superset-init:
+    image: apache/superset:latest
+    container_name: smart-job-bi-superset-init
+    depends_on:
+      - postgres
+    environment:
+      SUPERSET_SECRET_KEY: "smart_job_bi_system_secret_key_change_me_2026"
+      SQLALCHEMY_DATABASE_URI: "postgresql://superset:superset_password@postgres:5432/superset"
+    command: >
+      bash -c "
+        superset db upgrade &&
+        superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@smartjob.local --password admin &&
+        superset init
+      "
+
+  superset:
+    image: apache/superset:latest
+    container_name: smart-job-bi-superset
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8088:8088"
+    environment:
+      SUPERSET_SECRET_KEY: "smart_job_bi_system_secret_key_change_me_2026"
+      SQLALCHEMY_DATABASE_URI: "postgresql://superset:superset_password@postgres:5432/superset"
+      ENABLE_CORS: "true"
+    volumes:
+      - ./data:/app/data
+
+volumes:
+  superset_db_data:
+

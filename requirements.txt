@@ -1,0 +1,33 @@
+# =============================================================================
+# Smart Job BI System — Python Dependencies
+# =============================================================================
+
+# Web Framework
+flask>=3.0.0
+
+# Data Processing & Analysis
+pandas>=2.2.0
+numpy>=1.26.0
+
+# Visualization
+matplotlib>=3.8.0
+
+# Database ORM
+sqlalchemy>=2.0.0
+
+# Machine Learning
+scikit-learn>=1.4.0
+
+# Fake / Synthetic Data Generation
+faker>=24.0.0
+
+# =============================================================================
+# Optional but Recommended
+# =============================================================================
+# flask-sqlalchemy>=3.1.0     # Flask-SQLAlchemy integration
+# python-dotenv>=1.0.0        # Load .env files
+# seaborn>=0.13.0             # Enhanced statistical visualizations
+# openpyxl>=3.1.0             # Excel file support for pandas
+# gunicorn>=21.2.0            # Production WSGI server (Linux/macOS)
+# waitress>=3.0.0             # Production WSGI server (Windows)
+
